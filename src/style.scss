@@ -1,0 +1,26 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-demo-block-dynamic-block {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 30px;
+	li{
+		margin: 15px 0;
+		h5 {
+			font-weight: bold;
+			margin-bottom: 7px;
+		}
+		img {
+			width: 100%;
+			height: auto;
+		}
+	}
+}
