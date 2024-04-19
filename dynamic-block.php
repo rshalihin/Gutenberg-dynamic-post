@@ -26,13 +26,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array $attributes The attributes.
  */
 function dynamic_block_render_block( $attributes ) {
-	$args         = array(
+	$args = array(
 		'posts_per_page' => $attributes['numberOfPages'],
 		'post_type'      => 'publish',
 		'post_type'      => 'post',
-		'order'			 => $attributes['order'],
+		'order'          => $attributes['order'],
 		'orderby'        => $attributes['orderBy'],
 	);
+	if ( isset( $attributes['categories'] ) ) {
+		$args['category__in'] = array_column( $attributes['categories'], 'id' );
+	}
 	$recent_posts = get_posts( $args );
 
 	$posts = '<ul ' . get_block_wrapper_attributes() . '>';

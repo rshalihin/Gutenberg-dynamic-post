@@ -43,16 +43,39 @@ function Edit({
     numberOfPages,
     displayFutureImage,
     order,
-    orderBy
+    orderBy,
+    categories
   } = attributes;
+  const cateId = categories && categories.length > 0 ? categories.map(cat => cat.id) : [];
   const posts = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(select => {
     return select('core').getEntityRecords('postType', 'post', {
       per_page: numberOfPages,
       _embed: true,
       order,
-      orderby: orderBy
+      orderby: orderBy,
+      categories: cateId
     });
-  }, [numberOfPages, order, orderBy]);
+  }, [numberOfPages, order, orderBy, categories]);
+  const allCategories = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(select => {
+    return select('core').getEntityRecords('taxonomy', 'category');
+  }, []);
+  const categorySuggestions = {};
+  if (allCategories) {
+    for (let i = 0; i < allCategories.length; i++) {
+      const cate = allCategories[i];
+      categorySuggestions[cate.name] = cate;
+    }
+  }
+  const onCategoriesChange = values => {
+    const hasNoSuggestions = values.some(value => typeof value === 'string' && !categorySuggestions[value]);
+    if (hasNoSuggestions) return;
+    const updateCate = values.map(value => {
+      return typeof value === 'string' ? categorySuggestions[value] : value;
+    });
+    setAttributes({
+      categories: updateCate
+    });
+  };
   const onChangeFeatureImageToggle = () => {
     setAttributes({
       displayFutureImage: !displayFutureImage
@@ -74,7 +97,10 @@ function Edit({
     order: order,
     onOrderChange: newOrder => setAttributes({
       order: newOrder
-    })
+    }),
+    categorySuggestions: categorySuggestions,
+    selectedCategories: categories,
+    onCategoryChange: onCategoriesChange
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_6__.ToggleControl, {
     checked: displayFutureImage,
     help: "This will help you turn on/off feature images.",
@@ -257,7 +283,7 @@ module.exports = window["wp"]["i18n"];
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"demo-block/dynamic-block","version":"0.1.0","title":"Dynamic Block","category":"text","icon":"networking","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"textdomain":"dynamic-block","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","attributes":{"numberOfPages":{"type":"number","default":5},"displayFutureImage":{"type":"boolean","default":true},"order":{"type":"string","default":"asc"},"orderBy":{"type":"string","default":"date"}}}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"demo-block/dynamic-block","version":"0.1.0","title":"Dynamic Block","category":"text","icon":"networking","description":"Example block scaffolded with Create Block tool.","example":{},"supports":{"html":false},"textdomain":"dynamic-block","editorScript":"file:./index.js","editorStyle":"file:./index.css","style":"file:./style-index.css","viewScript":"file:./view.js","attributes":{"numberOfPages":{"type":"number","default":5},"displayFutureImage":{"type":"boolean","default":true},"order":{"type":"string","default":"asc"},"orderBy":{"type":"string","default":"date"},"categories":{"type":"array","items":{"type":"object"}}}}');
 
 /***/ })
 

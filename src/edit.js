@@ -3,14 +3,36 @@ import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import { format, dateI18n, getSettings } from '@wordpress/date';
 import { RawHTML } from "@wordpress/element";
-import { PanelBody, QueryControls, ToggleControl } from "@wordpress/components";
+import { PanelBody, QueryControls, ToggleControl, Icon } from "@wordpress/components";
 import './editor.scss';
 
 export default function Edit({attributes, setAttributes}) {
-	const { numberOfPages, displayFutureImage, order, orderBy } = attributes;
+	const { numberOfPages, displayFutureImage, order, orderBy, categories } = attributes;
+	const cateId = categories && categories.length > 0 ? categories.map( cat => cat.id ) : [];
+
 	const posts = useSelect( ( select ) => {
-		return select('core').getEntityRecords('postType', 'post', {per_page: numberOfPages, _embed: true, order, orderby: orderBy });
-	}, [ numberOfPages, order, orderBy ] );
+		return select('core').getEntityRecords('postType', 'post', {per_page: numberOfPages, _embed: true, order, orderby: orderBy, categories: cateId });
+	}, [ numberOfPages, order, orderBy, categories ] );
+
+	const allCategories = useSelect( ( select ) => {
+		return select('core').getEntityRecords('taxonomy', 'category' );
+	}, [] );
+	
+	const categorySuggestions = {}
+	if ( allCategories ) {
+		for (let i = 0; i < allCategories.length; i++) {
+			const cate = allCategories[i];
+			categorySuggestions[cate.name] = cate;			
+		}
+	}
+
+	const onCategoriesChange = ( values ) => {
+		const hasNoSuggestions = values.some( (value) => typeof value === 'string' && !categorySuggestions[value]);
+		if ( hasNoSuggestions ) return;
+		const updateCate = values.map( (value) => {return typeof value === 'string' ? categorySuggestions[value] : value } );
+		setAttributes({ categories: updateCate });
+	}
+
 	const onChangeFeatureImageToggle = () => {
 		setAttributes({ displayFutureImage: !displayFutureImage });
 	}
@@ -27,6 +49,9 @@ export default function Edit({attributes, setAttributes}) {
 						onOrderByChange = { (newOrderBy) => setAttributes({ orderBy: newOrderBy}) }
 						order={order}
 						onOrderChange={ (newOrder) => setAttributes({order: newOrder}) }
+						categorySuggestions={categorySuggestions}
+						selectedCategories={categories}
+						onCategoryChange={onCategoriesChange}
                     />
 					<ToggleControl
 						 checked={displayFutureImage}
